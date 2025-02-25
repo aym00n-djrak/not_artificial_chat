@@ -1,7 +1,7 @@
 const Footer = () => {
     return(
         <footer>
-            <p>2025 Not_Artificial. Tous droits réservés.</p>
+            <p style={{ textAlign:"center"}}>2025 Not_Artificial. Tous droits réservés.</p>
         </footer>
     );
 };
