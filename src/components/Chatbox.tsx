@@ -1,72 +1,43 @@
-"use client"
-
-import { Box, Button, Container, TextArea } from "@radix-ui/themes";
+"use client";
 import { useState } from "react";
-
-interface Message {
-    sender: string;
-    text: string;
-}
+import { TextArea, Button } from "@radix-ui/themes";
+import { sendMessageToAPI } from "@/services/api";
+import MessageList from "@/components/Messagelist";
+import { Message } from "@/types/Message";
 
 const ChatBox = () => {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (message.trim()) {
-            setMessages([...messages, { sender: "user", text: message }]);
+            const newMessages = [...messages, { sender: "user", text: message }];
+            setMessages(newMessages);
             setMessage("");
-            setTimeout(() => {
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { sender: "server", text: "Hey" },
-                ]);
-            }, 500);
+            try {
+                console.log("Sending message to API...");
+                console.log(newMessages);
+                const data = await sendMessageToAPI(newMessages);
+                setMessages(prev => [...prev, { sender: "server", text: data.choices[0].message.content }]);
+            } catch (error) {
+                console.error("Error:", error);
+            }
         }
     };
 
     return (
-        <Box>
-            <Container>
-                <Box>
-                    {messages.map((msg, index) => (
-                        <Box
-                            key={index}
-                            style={{
-                                textAlign: msg.sender === "user" ? "left" : "right",
-                                marginBottom: "10px",
-                            }}
-                        >
-                            <span
-                                style={{
-                                    display: "inline-block",
-                                    padding: "10px",
-                                    borderRadius: "5px",
-                                    backgroundColor: msg.sender === "user" ? "#cce5ff" : "#d4edda",
-                                }}
-                            >
-                                {msg.text}
-                            </span>
-                        </Box>
-                    ))}
-                </Box>
-                <TextArea
-                    placeholder="Parle avec le chat..."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                />
-                <Button
-                    style={{
-                        width: "100%",
-                        marginTop: "10px",
-                    }}
-                    onClick={handleSendMessage}
-                >
-                    Envoyer
-                </Button>
-            </Container>
-        </Box>
+        <div>
+            <MessageList messages={messages} />
+            <TextArea
+                style={{ width: "100%", marginTop: "10px" }}
+                placeholder="Parle avec le chat..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+            />
+            <Button style={{ width: "100%", marginTop: "10px" }} onClick={handleSendMessage}>
+                Envoyer
+            </Button>
+        </div>
     );
 };
-
 export default ChatBox;
